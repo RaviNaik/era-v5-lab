@@ -6,7 +6,7 @@ Shared G10 special-token file (`teams/10-post-training/special-tokens/special_to
 
 - **ChatML style is used for `v0`.**
 - **One rule:** every chat marker must be **one atomic special token** in the tokenizer, **never plain text** (the BPE/unigram tokenizer must never split a chat marker into subword pieces, and plain-text tags like `<think>` or `<tool_call>` are rejected).
-- **256 reserved token IDs (`0..255`):** G3 reserves the full 256-ID block. Assigned IDs below are frozen; unassigned IDs in `0..255` are reserved (`<|reserved_003|>` .. `<|reserved_255|>`).
+- **256 reserved token IDs (`0..255`):** G3 reserves the full 256-ID block. Assigned IDs below are frozen; unassigned IDs in `0..255` are reserved (`<|reserved_004|>` .. `<|reserved_255|>`).
 
 ## Team workflow (Core Team · 12 members)
 
@@ -26,10 +26,13 @@ TSAI reserves 256 token IDs (`0..255`). Every chat marker below is registered as
 | `000` | `endoftext` | `<\|endoftext\|>` | End of document / transcript |
 | `001` | `im_start` | `<\|im_start\|>` | Start of a ChatML turn |
 | `002` | `im_end` | `<\|im_end\|>` | End of a ChatML turn |
+| `003` | `pad` | `<\|pad\|>` | Padding for batched training; never appears in a rendered transcript |
 | `016` | `effort_1k` | `<\|effort_1k\|>` | Effort budget: 1,024 tokens (think + tool trace) |
 | `017` | `effort_4k` | `<\|effort_4k\|>` | Effort budget: 4,096 tokens (think + tool trace) |
 | `018` | `effort_16k` | `<\|effort_16k\|>` | Effort budget: 16,384 tokens (think + tool trace) |
 | `019` | `effort_64k` | `<\|effort_64k\|>` | Effort budget: 65,536 tokens (think + tool trace) |
+| `020` | `tools` | `<\|tools\|>` | Start of the tool-declaration block (tool schemas) in the system turn |
+| `021` | `tools_end` | `<\|/tools\|>` | End of the tool-declaration block |
 | `024` | `think` | `<\|think\|>` | Start of reasoning trace (1 special token, never plain `<think>`) |
 | `025` | `think_end` | `<\|/think\|>` | End of reasoning trace (1 special token, never plain `</think>`) |
 | `026` | `tool_call` | `<\|tool_call\|>` | Start of tool call JSON payload (1 special token) |
@@ -43,10 +46,13 @@ Machine-readable list of assigned markers for G3 (`ID Name Surface`):
 000 endoftext <|endoftext|>
 001 im_start <|im_start|>
 002 im_end <|im_end|>
+003 pad <|pad|>
 016 effort_1k <|effort_1k|>
 017 effort_4k <|effort_4k|>
 018 effort_16k <|effort_16k|>
 019 effort_64k <|effort_64k|>
+020 tools <|tools|>
+021 tools_end <|/tools|>
 024 think <|think|>
 025 think_end <|/think|>
 026 tool_call <|tool_call|>
@@ -55,7 +61,7 @@ Machine-readable list of assigned markers for G3 (`ID Name Surface`):
 029 tool_result_end <|/tool_result|>
 ```
 
-All remaining 243 IDs in `0..255` (`003..015`, `020..023`, `030..255`) are reserved by TSAI as `<|reserved_003|>` through `<|reserved_255|>`.
+All remaining 240 IDs in `0..255` (`004..015`, `022..023`, `030..255`) are reserved by TSAI as `<|reserved_004|>` through `<|reserved_255|>`.
 
 ### Effort budgets
 

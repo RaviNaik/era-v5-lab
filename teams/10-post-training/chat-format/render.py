@@ -1,7 +1,7 @@
 """Render and parse ChatML-style chat format v0.
 
 Rule: every chat marker is ONE special token in the tokenizer (0..255), never plain text.
-The 13 assigned chat markers and 243 reserved slots (256 total) are sent to
+The 16 assigned chat markers and 240 reserved slots (256 total) are sent to
 Team 3 (G3 Tokenizer) by Sat 31 Oct so G3 reserves the token IDs.
 """
 
@@ -24,10 +24,13 @@ ASSIGNED_SURFACES: dict[int, tuple[str, str]] = {
     0: ("endoftext", "<|endoftext|>"),
     1: ("im_start", "<|im_start|>"),
     2: ("im_end", "<|im_end|>"),
+    3: ("pad", "<|pad|>"),
     16: ("effort_1k", "<|effort_1k|>"),
     17: ("effort_4k", "<|effort_4k|>"),
     18: ("effort_16k", "<|effort_16k|>"),
     19: ("effort_64k", "<|effort_64k|>"),
+    20: ("tools", "<|tools|>"),
+    21: ("tools_end", "<|/tools|>"),
     24: ("think", "<|think|>"),
     25: ("think_end", "<|/think|>"),
     26: ("tool_call", "<|tool_call|>"),

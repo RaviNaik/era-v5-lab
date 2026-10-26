@@ -32,10 +32,13 @@ def test_block_reserves_256_ids_and_every_marker_is_one_special_token():
         "<|endoftext|>",
         "<|im_start|>",
         "<|im_end|>",
+        "<|pad|>",
         "<|effort_1k|>",
         "<|effort_4k|>",
         "<|effort_16k|>",
         "<|effort_64k|>",
+        "<|tools|>",
+        "<|/tools|>",
         "<|think|>",
         "<|/think|>",
         "<|tool_call|>",
@@ -51,6 +54,9 @@ def test_effort_budgets_and_turn_tokens():
     assert names["im_start"] == "<|im_start|>"
     assert names["im_end"] == "<|im_end|>"
     assert names["endoftext"] == "<|endoftext|>"
+    assert names["pad"] == "<|pad|>"
+    assert names["tools"] == "<|tools|>"
+    assert names["tools_end"] == "<|/tools|>"
     assert names["think"] == "<|think|>"
     assert names["think_end"] == "<|/think|>"
     assert names["tool_call"] == "<|tool_call|>"

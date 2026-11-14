@@ -73,6 +73,7 @@ python -m pytest teams/10-post-training/rl/test_objective_v1.py -q -p no:cachepr
 | `tasks/` | The original coding tasks (see "Writing a task"). |
 | `reward.py`, `test_reward.py` | The one `reward(env_id, output)` entry point for code and SWE environments. |
 | `objective_v1.py`, `objective_v1.md`, `test_objective_v1.py` | Session 18 objective: group advantage, equal-reward drop, trust-region mask. |
+| `small_rl.py`, `test_small_rl.py` | Local RL loop on one code task. The result is `results/small_rl.md`. |
 | `pool.py`, `bench_pool.py` | The warm container pool for code tasks, and the rollouts-per-second benchmark. |
 | `design_note.md` | Design, the cheating cases and open questions. |
 | `decontam_report.md` | Benchmark-overlap check of the RL sets (see below). |

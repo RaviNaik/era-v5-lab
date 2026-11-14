@@ -10,5 +10,5 @@
   "limits"
  ],
  "language": "go",
- "source": "original: written by Ravi Naik (RaviNaik), 2026-11-14; not from any benchmark; reference solution execution-verified by go_verifier.py --check-task"
+ "source": "original: written by Claude (AI assistant) for Ravi Naik (RaviNaik), 2026-11-14; not from any benchmark; reference solution execution-verified by go_verifier.py --check-task"
 }

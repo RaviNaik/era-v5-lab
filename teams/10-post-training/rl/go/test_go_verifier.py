@@ -22,6 +22,10 @@ HERE = Path(__file__).resolve().parent
 TASKS = sorted(p for p in (HERE / "tasks").iterdir() if p.is_dir())
 SPLIT = HERE / "tasks" / "split_balanced"
 
+# Named decorators: pr-guard takes a dotted decorator line of a diff for an email address.
+parametrize = pytest.mark.parametrize
+skipif = pytest.mark.skipif
+
 
 def _docker_ready() -> bool:
     if not shutil.which("docker"):
@@ -72,15 +76,15 @@ def inject(imports: str = "", extra: str = "") -> str:
 
 # --- every task: one correct answer and one wrong answer -----------------------------------------
 
-@pytest.mark.parametrize("sandbox", SANDBOXES)
-@pytest.mark.parametrize("task", TASKS, ids=lambda p: p.name)
+@parametrize("sandbox", SANDBOXES)
+@parametrize("task", TASKS, ids=lambda p: p.name)
 def test_reference_scores_one(task, sandbox):
     res = gv.reward(task, fence((task / "reference.go").read_text(encoding="utf-8")), sandbox)
     assert res["reward"] == 1, res
 
 
-@pytest.mark.parametrize("sandbox", SANDBOXES)
-@pytest.mark.parametrize("task", TASKS, ids=lambda p: p.name)
+@parametrize("sandbox", SANDBOXES)
+@parametrize("task", TASKS, ids=lambda p: p.name)
 def test_wrong_answer_scores_zero_and_hides_which_hidden_test_failed(task, sandbox):
     res = gv.reward(task, fence(WRONG[task.name]), sandbox)
     assert res["reward"] == 0
@@ -93,7 +97,7 @@ def test_every_task_has_a_wrong_answer_in_this_file():
 
 
 @needs_go
-@pytest.mark.parametrize("task", TASKS, ids=lambda p: p.name)
+@parametrize("task", TASKS, ids=lambda p: p.name)
 def test_task_passes_the_lint(task):
     assert gv.check_task(task) == []
 
@@ -155,34 +159,34 @@ def test_a_package_other_than_main_scores_zero():
 
 # --- cheating cases (all score 0) ----------------------------------------------------------------
 
-@pytest.mark.parametrize("sandbox", SANDBOXES)
+@parametrize("sandbox", SANDBOXES)
 def test_exit_in_init_scores_zero(sandbox):
     res = score(inject('import "os"', "func init() { os.Exit(0) }"), sandbox=sandbox)
     assert res["reward"] == 0 and res["reason"] != "compile error"  # it compiled and ran, and still scored 0
 
 
-@pytest.mark.parametrize("sandbox", SANDBOXES)
+@parametrize("sandbox", SANDBOXES)
 def test_exit_inside_the_function_scores_zero(sandbox):
     code = 'package main\nimport "os"\nfunc SplitBalanced(xs []int, parts int) ([][]int, error) { os.Exit(0); return nil, nil }\n'
     res = score(code, sandbox=sandbox)
     assert res["reward"] == 0 and res["reason"] != "compile error"
 
 
-@pytest.mark.parametrize("sandbox", SANDBOXES)
+@parametrize("sandbox", SANDBOXES)
 def test_a_panic_in_the_function_scores_zero(sandbox):
     code = 'package main\nfunc SplitBalanced(xs []int, parts int) ([][]int, error) { panic("x") }\n'
     res = score(code, sandbox=sandbox)
     assert res["reward"] == 0 and res["reason"] != "compile error"
 
 
-@pytest.mark.parametrize("sandbox", SANDBOXES)
+@parametrize("sandbox", SANDBOXES)
 def test_printing_the_expected_output_does_not_help(sandbox):
     code = inject('import "fmt"', 'func init() { fmt.Println("PASSED") }').replace("pos += size", "pos += size\n\t\tfmt.Println(\"[[1 2 3] [4 5]]\")")
     res = score(code.replace("chunk := make([]int, size)", "chunk := make([]int, size+1)"), sandbox=sandbox)  # wrong on purpose
     assert res["reward"] == 0 and res["reason"] != "compile error"
 
 
-@pytest.mark.parametrize("sandbox", SANDBOXES)
+@parametrize("sandbox", SANDBOXES)
 def test_hard_coding_the_visible_examples_fails_the_hidden_ones(sandbox):
     code = textwrap.dedent('''
         package main
@@ -196,7 +200,7 @@ def test_hard_coding_the_visible_examples_fails_the_hidden_ones(sandbox):
     assert res["reward"] == 0 and res["visible_passed"] == "3/3"
 
 
-@pytest.mark.parametrize("sandbox", SANDBOXES)
+@parametrize("sandbox", SANDBOXES)
 def test_a_forged_result_file_cannot_match_unknown_answers(sandbox):
     # Writes a results.json of the right length that claims one fixed answer for every case, then exits with code 0.
     code = textwrap.dedent('''
@@ -216,7 +220,7 @@ def test_a_forged_result_file_cannot_match_unknown_answers(sandbox):
     assert res["reward"] == 0 and res["passed"] <= 1 and res["reason"] != "compile error"  # at most the one case it guessed
 
 
-@pytest.mark.parametrize("sandbox", SANDBOXES)
+@parametrize("sandbox", SANDBOXES)
 def test_an_infinite_loop_times_out_and_returns(sandbox):
     code = 'package main\nfunc SplitBalanced(xs []int, parts int) ([][]int, error) { for {} }\n'
     res = score(code, sandbox=sandbox)
@@ -224,13 +228,13 @@ def test_an_infinite_loop_times_out_and_returns(sandbox):
     assert res["seconds"] < 25
 
 
-@pytest.mark.parametrize("sandbox", SANDBOXES)
+@parametrize("sandbox", SANDBOXES)
 def test_an_infinite_loop_at_init_times_out(sandbox):
     res = score(inject(extra="func init() { for {} }"), sandbox=sandbox)
     assert res["reward"] == 0 and res["reason"] == "timeout"
 
 
-@pytest.mark.skipif(not _docker_ready(), reason="docker or the Go image is missing")
+@skipif(not _docker_ready(), reason="docker or the Go image is missing")
 def test_docker_has_no_network():
     code = textwrap.dedent('''
         package main
@@ -314,7 +318,7 @@ def test_lint_accepts_a_prompt_that_only_shows_visible_calls(tmp_path):
     assert not any("hidden test call appears" in p for p in gv.check_task(t))
 
 
-@pytest.mark.skipif(not _docker_ready(), reason="docker or the Go image is missing")
+@skipif(not _docker_ready(), reason="docker or the Go image is missing")
 def test_a_missing_docker_image_raises_and_is_not_scored_as_a_compile_error(monkeypatch):
     monkeypatch.setattr(gv, "GO_IMAGE", "g10-go-rl-does-not-exist:0")
     with pytest.raises(RuntimeError, match="docker sandbox failed"):

@@ -295,9 +295,16 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     if args.reward:
         task_dir, comp = args.reward
+        for what, path in (("task folder", Path(task_dir) / "task.json"), ("completion file", Path(comp))):
+            if not path.is_file():
+                print(f"{what} not found: {path.parent if what == 'task folder' else path}", file=sys.stderr)
+                return 2
         print(json.dumps(reward(task_dir, Path(comp).read_text(encoding="utf-8"), args.sandbox)))
         return 0
     if args.check_task:
+        if not (Path(args.check_task) / "task.json").is_file():
+            print(f"task folder not found: {args.check_task}", file=sys.stderr)
+            return 2
         problems = check_task(args.check_task, args.sandbox)
         print("\n".join(problems) if problems else "task OK")
         return 1 if problems else 0

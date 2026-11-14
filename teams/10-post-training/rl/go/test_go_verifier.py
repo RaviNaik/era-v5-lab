@@ -347,3 +347,11 @@ def test_cli_reward(tmp_path):
     out = subprocess.run([sys.executable, str(HERE / "go_verifier.py"), "--reward", str(SPLIT), str(comp)],
                          capture_output=True, text=True)
     assert json.loads(out.stdout)["reward"] == 1
+
+
+def test_cli_names_a_missing_task_folder_instead_of_a_traceback(tmp_path):
+    comp = tmp_path / "c.txt"
+    comp.write_text(fence(CORRECT_SPLIT))
+    for cmd in (["--reward", str(tmp_path / "nope"), str(comp)], ["--check-task", str(tmp_path / "nope")]):
+        out = subprocess.run([sys.executable, str(HERE / "go_verifier.py"), *cmd], capture_output=True, text=True)
+        assert out.returncode == 2 and "not found" in out.stderr and "Traceback" not in out.stderr

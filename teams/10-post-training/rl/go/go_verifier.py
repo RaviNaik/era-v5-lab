@@ -139,7 +139,7 @@ _RC_COMPILE, _RC_CHILD, _RC_SETUP = 3, 4, 5
 def _run_docker(workdir: Path, task_time_s: float) -> str | None:
     name = f"g10go-{uuid.uuid4().hex[:12]}"
     # Candidate output goes to /dev/null: nothing it prints can fill this process's memory.
-    script = ("cp -R /opt/gocache /tmp/gocache || exit %d; go build -o /work/sol . >/dev/null 2>&1 || exit %d; "
+    script = ("cp -R /opt/gocache /tmp/gocache || exit %d; go build -ldflags='-s -w' -o /work/sol . >/dev/null 2>&1 || exit %d; "
               "/work/sol %s >/dev/null 2>&1 </dev/null || exit %d" % (_RC_SETUP, _RC_COMPILE, CASE_TIMEOUT_S, _RC_CHILD))
     cmd = ["docker", "run", "--rm", "--name", name, "--network=none", "--read-only", "--cap-drop", "ALL",
            "--security-opt", "no-new-privileges", "--pids-limit", "128", "--memory", "768m", "--memory-swap", "768m",

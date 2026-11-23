@@ -42,7 +42,7 @@ model is used, with the instruction to end with `#### <number>`.
 
 | | base | Deletion Tuning | change |
 |---|---:|---:|---:|
-| GSM8K, chat template | 58.5% (117/200) | 71.5% (143/200) | **+13.0** |
+| GSM8K, chat template | 58.5% (117/200) | 71.5% (143/200) | **+13.0** (95% interval +7.0 to +19.0) |
 | GSM8K, training format | 33.5% (67/200) | 78.5% (157/200) | +45.0 |
 | replies that contain `####`, training format | 23.5% | 99.5% | +76.0 |
 | hellaswag | 70.00 | 70.00 | 0.00 |
@@ -58,9 +58,11 @@ model is used, with the instruction to end with `#### <number>`.
 
 ## How to read it
 
-- **The chat-template gain is the one to quote.** With 200 questions the standard error of one accuracy is about 3
-  points, so +13 is about 2.8 standard errors of the difference (unpaired, so conservative).
-- **The training-format +45 is mostly format.** The base model puts `####` in 23.5% of its replies, the tuned model in
+- **The chat-template gain is the one to quote.** Paired on the same 200 questions: the tuned model got 33 right that the
+  base model got wrong, and the base model got 7 right that the tuned model got wrong. Change +13.0 points, 95% interval
+  [+7.0, +19.0] (bootstrap over questions), exact McNemar p = 4.2e-05.
+- **The training-format +45 is mostly format** (paired: 98 questions only the tuned model got right, 8 only the base
+  model; interval [+37.0, +53.0]). The base model puts `####` in 23.5% of its replies, the tuned model in
   99.5%. The scorer falls back to the last number in a reply that has no `####`, so a reply in another format is scored
   on whatever number comes last. This column mixes learning the format with solving the problem.
 - **No forgetting was detected, which is not the same as none.** At 50 items one item is 2 points: the humaneval -2 is
@@ -75,11 +77,12 @@ model is used, with the instruction to end with `#### <number>`.
 
 ## Not shown
 
-- One seed, one training run per setting. No variance across seeds.
+- One seed, one training run per setting. No variance across seeds. The interval above covers the choice of
+  questions, not the choice of seed.
 - 200 GSM8K questions and 50 items per prior task. ifeval and humaneval generate for hours, so they were kept small.
 - No LoRA or full fine-tuning arm on this model, so nothing here says Deletion Tuning is better or worse than they are.
-  The code for both (same data, steps and batch size) and for a paired test on the saved replies is written and tested on
-  a tiny model on CPU; it has not run on the real model.
+  The code for both (same data, steps and batch size) is written and tested on a tiny model on CPU; it has not run on the
+  real model.
 - Not the capstone architecture (no KE2, no untied KAS head, no Muon) and a public model, so no claim about dry run 2.
 - The lm-evaluation-harness benchmarks here are public benchmarks on a public model. No lab model or lab checkpoint was
   scored, and nothing from this run goes to Team 9's watcher or to `forgetting.py`.
@@ -111,8 +114,8 @@ Both logs, with the server paths replaced, are in `RaviNaik/ERA` at `v5/capstone
 
 ## Next
 
-1. Paired test on the saved replies (McNemar and a bootstrap interval), then a larger run of the same comparison: all
-   1,319 GSM8K questions in the chat template and the four log-likelihood prior tasks at 200 items.
+1. A larger run of the same comparison: all 1,319 GSM8K questions in the chat template and the four log-likelihood prior
+   tasks at 200 items. (The paired test on the 200 questions is done and is in the table above.)
 2. LoRA (same 512 gate projections) and full fine-tuning on the same data, steps and batch size, evaluated the same way.
    Their learning rates are common defaults, not tuned, and this file will say so.
 3. This file is then updated in place with those rows.
